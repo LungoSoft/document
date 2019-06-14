@@ -1,0 +1,32 @@
+{
+    "name": "lungosoft/document",
+    "description": "Document for documents with header and lines structure, validating lines and header information, saving data on database.",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Luis Guillen",
+            "email": "luis.guillen@lungosoft.com"
+        }
+    ],
+    "require": {
+        "php": ">=7.0.0",
+        "illuminate/support": "^5.5",
+        "illuminate/database": "^5.5",
+        "illuminate/contracts": "^5.5"
+    },
+    "autoload": {
+        "psr-4": {
+            "Lungo\\Doc\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Lungo\\Doc\\Test\\": "tests/"
+        }
+    },
+    "require-dev": {
+        "mockery/mockery": "^1.2",
+        "phpunit/phpunit": "7"
+    }
+}
