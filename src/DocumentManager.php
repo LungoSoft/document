@@ -36,17 +36,14 @@ class DocumentManager
             $lineQuantityColumn = $this->documentI->getLineQuantityColumn();
             
             if ($header->$headerColumn == $headerStatus && $line->$lineColumn == $lineStatus) {
-                $line2 = $this->documentF->getModelLineByFK($id, $lineId, $this->foreignKey);
-                $lineColumn2 = $this->documentF->getLineColumnStatus();
-                $lineStatus2 = $this->documentF->getLineCloseStatus();
-                $lineQuantityColumn2 = $this->documentF->getLineQuantityColumn();
+                $line2Qty = $this->documentF->getModelLinesByFK($lineId, $this->foreignKey)->sum($this->documentF->getLineQuantityColumn());
 
-                if ($quantity > $line2->$lineQuantityColumn2) {
+                if ($quantity > $line2Qty) {
                     $this->editQuantity($line, $quantity);
                     return true;
-                } elseif ($quantity == $line2->$lineQuantityColumn2) {
+                } elseif ($quantity == $line2Qty) {
                     $line->$lineQuantityColumn = $quantity;
-                    $line->$lineColumn2 = $lineStatus2;
+                    $line->$lineColumn = $lineStatus;
                     $line->save();
                     return true;
                 }

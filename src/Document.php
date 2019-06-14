@@ -208,9 +208,9 @@ class Document implements DocumentI
         }
     }
 
-    public function getModelLineByFK($id, $value, $fk)
+    public function getModelLinesByFK($value, $fk)
     {
         $lineClass = $this->lineClass;
-        return $lineClass::where('id', $id)->where($fk, $value)->first();
+        return $lineClass->where($fk, $value)->get();
     }
 }
