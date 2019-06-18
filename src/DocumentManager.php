@@ -3,6 +3,7 @@
 namespace Lungo\Doc;
 
 use Lungo\Doc\Document;
+use Illuminate\Support\Facades\Config;
 
 class DocumentManager
 {
@@ -13,6 +14,34 @@ class DocumentManager
         $this->documentI = $documentI;
         $this->documentF = $documentF;
         $this->foreignKey = $foreignKey;
+    }
+
+    public function createFrom ($lines, $rules) {
+        if (is_string($rules)) {
+            $rules = Config::get('documents.'.$rules, null);//get rules from config file
+        }
+
+        if (!$rules) {
+            throw new \Exception("Error to try access $rules config or doesnt pass any rule");
+        }
+
+        $documentI = $this->documentI;//get instance of source document
+        $fk = $this->foreignKey;
+        
+        foreach ($lines as $key => $line) {
+            $actualLineId = isset($line[$fk]) ? $line[$fk] : null;//get actual id from line if foreign key is defined
+            if ($actualLineId) {
+                $actualLine = $documentI->getModel($actualLineId, false);
+            }
+
+            if (isset($actualLine) && $actualLine) {//if exist line, then map columns from config
+                foreach ($rules as $columnFrom => $columnTo) {
+                    $lines[$key][$columnTo] = $actualLine->$columnFrom;
+                }
+            }
+        }
+
+        return $lines;
     }
     
     public function editQuantityLine($id, $lineId, $quantity) 
