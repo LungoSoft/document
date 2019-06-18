@@ -49,4 +49,49 @@ class DocumentManagerTest extends TestCase
         $this->assertTrue($result2);
         $this->assertFalse($result3);
     }
+
+    public function test_prepare_document_lines ()
+    {
+        $mockDoc1 = Mockery::mock(\Lungo\Doc\Test\Testeable\DocTest::class);
+        $mockDoc2 = Mockery::mock(\Lungo\Doc\Test\Testeable\DocTest::class);
+
+        $docModel = new Model;
+        $docModel->product_name = 'Paper';
+        $docModel->price = 100;
+        $docModel->tax = 16;
+
+        $mockDoc1->shouldReceive('getModel')->withArgs([2, false])->andReturn($docModel);
+
+        $lines = [
+            [
+                'product' => 'Product Name',
+                'price' => 10,
+                'tax_price' => 1.6,
+            ],
+            [
+                'foreign_key' => 2,
+            ],
+        ];
+        $rules = [
+            'product_name' => 'product',
+            'price' => 'price',
+            'tax' => 'tax_price',
+        ];
+
+        $doc = new DocumentManager($mockDoc1, $mockDoc2, "foreign_key");
+        $result = $doc->createFrom($lines, $rules);
+
+        $this->assertArraySubset($result, [[
+                'product' => 'Product Name',
+                'price' => 10,
+                'tax_price' => 1.6,
+            ],
+            [
+                'foreign_key' => 2,
+                'product' => 'Paper',
+                'price' => 100,
+                'tax_price' => 16,
+            ]
+        ]);
+    }
 }
