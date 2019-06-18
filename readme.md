@@ -12,12 +12,12 @@ Nos ayuda a relacionar 2 documentos mediante llave foranea. Un documento relacio
 
 En la imagen anterior vemos un ejemplo de dos documentos con sus relaciones
 
-*_¿En qué nos beneficia esta estructura?_*
+**_¿En qué nos beneficia esta estructura?_**
 
 Nos ayuda a poder hacer crud de documentos de manera segura y reduciendo validaciones de estatus de documentos al crear, edtiar y eliminar.
 En ocaciones, se requiere crear una cadena de documentos mucho más grande y estricta, reducimos el crud en una clase que controle estos cambios y sus cambios de estatus.
 
-*_¿Por que la redundancia de datos?_*
+**_¿Por que la redundancia de datos?_**
 
 Como se mencionó antes, a veces se requiere una línea de documentos más larga y más compleja.
 Un ejemplo de esto es una aplicación empresarial tipo ERP que controle documentos de compras, almacen y facturación.
@@ -28,11 +28,11 @@ La redundancia de datos nos ayuda a que podamos simplificar las consultas y sean
 
 Es por ello que debemos controlar la duplicación de datos de manera efectiva.
 
-*_Control de cantidades_*
+**_Control de cantidades_**
 
 Podemos controlar las cantidades al momento de editar un documento, es decir, supongamos que creamos un documento "Orden de Compra" y le damos entrada a una de sus líneas mediante un documento "Entrada" por una cantidad menor a la que dice el documento "Orden de Compra", podemos editar la cantidad del documento "Orden de Compra" siempre y cuando la cantidad no sobrepase a la que tiene el documento "Entrada".
 
-*_Columnas de las tablas_*
+**_Columnas de las tablas_**
 
 Todas las tablas deben tener por fuerza una de estatus (status). Para las líneas, adicional a estatus (status), una columna de cantidad (quantity). 
 Los estados de los documentos son 'Abierto', 'Cerrado' y 'Parcialmente Cerrado'.
@@ -122,5 +122,42 @@ Las propiedades pueden cambiarse para poder usar los nombres de columnas y estad
 
 ``$lineQuantityColumn: `` Nombre de columna de cantidad de la tabla línea. Default quantity.
 
+### DocumentManager
+
+DocumentManager es el gestor de documentos, se instancia pasando 2 clases de tipo document que se relacionan entre sí.
+
 ## Ejemplos
 
+**Crear un documento**
+
+````
+Route::post('/saleorder', function (Request $request) {
+    //validate saleorder data
+
+    if ($request->has(['header', 'lines'])) {
+        $saleOrder = \App\Repositories\SaleOrderRepository();
+        $saleOrder->create($request->header, $request->lines, 'sale_order_id');
+    } else {
+        //throw an error, 400 status or do a redirect....
+    }
+});
+````
+
+**Editar cabecera de un documento**
+
+````
+Route::post('/saleorder/{id}', function (Request $request, $id) {
+    //validate saleorder data
+
+    if ($request->has(['header'])) {
+        $saleOrder = \App\Repositories\SaleOrderRepository();
+        if ($saleOrder->editHeader($id, $request->header)) {
+            return response('OK', 200);
+        } else {
+            return response('OK', 400);
+        }
+    } else {
+        //throw an error, 400 status or do a redirect....
+    }
+});
+````
