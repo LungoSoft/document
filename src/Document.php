@@ -85,7 +85,7 @@ class Document implements DocumentI
         $lineClass = $this->lineClass;
 
         //create header
-        $line[$this->headerColumnStatus] = $this->headerOpenStatus;
+        $header[$this->headerColumnStatus] = $this->headerOpenStatus;
         $model = $headerClass::create($header);
         $header['id'] = $model->id;
 
@@ -98,6 +98,8 @@ class Document implements DocumentI
 
             $lines[$key]['id'] = $modelLine->id;
         }
+
+        return $this;
     }
 
     public function editHeader($id, array $header)
