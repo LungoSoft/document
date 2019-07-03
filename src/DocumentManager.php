@@ -126,4 +126,33 @@ class DocumentManager
         $line->$column = $quantity;
         $line->save();
     }
+
+    public function calculateLineStatus($id)
+    {
+        $statusColumnF = $this->documentF->getLineColumnStatus();
+        $quantityColumnF = $this->documentF->getLineQuantityColumn();
+        $closeStatusF = $this->documentF->getLineCloseStatus();
+
+        $model = $this->documentI->getModel($id, false);
+
+        $statusColumnI = $this->documentI->getLineColumnStatus();
+        $closeStatusI = $this->documentI->getLineCloseStatus();
+        $openStatusI = $this->documentI->getLineOpenStatus();
+        $partiallyStatusI = $this->documentI->getLinePartiallyCloseStatus();
+
+        $totalI = $model->quantity;
+        $totalF = $this->documentF->getModelLinesByFK($id, $this->foreignKey)->where($statusColumnF, '<>', $closeStatusF)->sum($quantityColumnF);
+
+        if ($totalF == 0) {
+            $model->$statusColumnI = $openStatusI;
+        } elseif ($totalI < $totalF) {
+            throw new Exception("For some reason, final document total is bigger than initial document total...");
+        } elseif ($totalI > $totalF) {
+            $model->$statusColumnI = $partiallyStatusI;
+        } elseif ($totalI == $totalF) {
+            $model->$statusColumnI = $closeStatusI;
+        }
+
+        $model->save();
+    }
 }
