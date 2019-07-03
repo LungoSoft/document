@@ -6,8 +6,12 @@ use Lungo\Doc\Interfaces\Document as DocumentI;
 
 class Document implements DocumentI
 {
-    protected $headerClass, $lineClass;
+    protected $headerClass, $lineClass, $foreignKeyLine;
 
+    public function getForeignKeyLine () 
+    {
+        return $this->foreignKeyLine;
+    }
 
     protected $headerColumnStatus = 'status';
 
@@ -79,25 +83,27 @@ class Document implements DocumentI
         return $this->lineQuantityColumn;
     }
 
-    public function create(array &$header, array &$lines, string $foreignKey)
+    public function create(array &$header, array &$lines)
     {
         $headerClass = $this->headerClass;
         $lineClass = $this->lineClass;
 
         //create header
-        $line[$this->headerColumnStatus] = $this->headerOpenStatus;
+        $header[$this->headerColumnStatus] = $this->headerOpenStatus;
         $model = $headerClass::create($header);
         $header['id'] = $model->id;
 
         //create lines
         foreach ($lines as $key => $line) {
-            $line[$foreignKey] = $model->id;
+            $line[$this->foreignKeyLine] = $model->id;
             $line[$this->lineColumnStatus] = $this->lineOpenStatus;
 
             $modelLine = $lineClass::create($line);
 
             $lines[$key]['id'] = $modelLine->id;
         }
+
+        return $this;
     }
 
     public function editHeader($id, array $header)
@@ -211,6 +217,6 @@ class Document implements DocumentI
     public function getModelLinesByFK($value, $fk)
     {
         $lineClass = $this->lineClass;
-        return $lineClass->where($fk, $value)->get();
+        return $lineClass->where($fk, $value);
     }
 }
