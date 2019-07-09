@@ -38,6 +38,24 @@ Todas las tablas deben tener por fuerza una de estatus (status). Para las línea
 Los estados de los documentos son 'Abierto', 'Cerrado' y 'Parcialmente Cerrado'.
 Los valore mencionados anteriormente (status, quantity, Abierto, Cerrado y Parcialmente Cerradp) son los default, pero pueden ser cambiados modificando las propiedades del documento.
 
+## Requisitos
+
+* Crear modelo: Crear el modelo Eloquent
+* Mass Assignment: Habilitar en los modelos la asignación masiva.
+* Relación One to Many: La cabecera debe tener el método `lines` con la relación al modelo líneas.
+
+````
+class Order extends Model
+{
+    protected $fillable = ['customer', 'status'];
+
+    public function lines()
+    {
+        return $this->hasMany(OrderDetail::class);
+    }
+}
+````
+
 ## Instalación
 
 > ``composer install "lungosoft/document"``
