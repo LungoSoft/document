@@ -18,6 +18,11 @@ class DocumentManager
         $this->foreignKey = $foreignKey;
     }
 
+    private $modifiedLines = [];
+
+    /**
+     * Crea una línea FINAL solo si está abierta o parcialmente abierta todas las líneas y existe la cantidad disponible de acuerdo a los documentos FINALES ya creados con ese id y con estatus abierto.
+     */
     public function createFrom ($header, $lines, $rules) {
         if (is_string($rules)) {
             $rules = Config::get('documents.'.$rules, null);//get rules from config file
@@ -28,6 +33,7 @@ class DocumentManager
         }
 
         $fk = $this->foreignKey;
+        $this->modifiedLines = [];
         
         foreach ($lines as $key => $line) {
             $actualLineId = isset($line[$fk]) ? $line[$fk] : null;//get actual id from line if foreign key if is defined
@@ -46,6 +52,7 @@ class DocumentManager
             }
         }
 
+        $this->updateLinesStatus();
         return $this->documentF->create($header, $lines);
     }
 
@@ -68,10 +75,10 @@ class DocumentManager
             //check quantity line
             if ($lineF[$quantityColumnF] < $quantity) {
                 $lineI->$statusColumnI = $partiallyCloseStatusI;
-                $lineI->save();
+                $this->modifiedLines[] = $lineI;
             } elseif ($lineF[$quantityColumnF] == $quantity) {
                 $lineI->$statusColumnF = $closeStatusI;
-                $lineI->save();
+                $this->modifiedLines[] = $lineI;
             } else {
                 return false;
             }
@@ -79,6 +86,12 @@ class DocumentManager
             return true;
         } else {
             return false;
+        }
+    }
+    
+    private function updateLinesStatus() {
+        foreach ($this->modifiedLines as $lineI) {
+            $lineI->save();
         }
     }
     
