@@ -2,7 +2,7 @@
 
 namespace Lungo\Doc\Exceptions;
 
-class RulesNotFoundException extends \Expcetion
+class RulesNotFoundException extends \Exception
 {
 
 }
