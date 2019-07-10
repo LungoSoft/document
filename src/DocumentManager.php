@@ -142,6 +142,8 @@ class DocumentManager
             $statusColumnF = $this->documentF->getLineColumnStatus();
             $quantityColumnF = $this->documentF->getLineQuantityColumn();
             $closeStatusF = $this->documentF->getLineDestroyedStatus();
+            $lineF->$statusColumnF = $closeStatusF;
+            $lineF->save();
             
             //get line of initial document
             $fk = $this->foreignKey;
