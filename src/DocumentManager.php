@@ -131,6 +131,38 @@ class DocumentManager
         }
     }
 
+    public function removeLine($id, $lineId)
+    {
+        $lineF = null;
+        $result = $this->documentF->getModels($id, $lineId, function ($headerM, $lineM) use (&$lineF) {
+            $lineF = $lineM;
+        });
+
+        if ($result) {
+            $statusColumnF = $this->documentF->getLineColumnStatus();
+            $quantityColumnF = $this->documentF->getLineQuantityColumn();
+            $closeStatusF = $this->documentF->getLineDestroyedStatus();
+            
+            //get line of initial document
+            $fk = $this->foreignKey;
+            $lineI = $this->documentI->getModel($lineF->$fk, false);
+            $lineColumnI = $this->documentI->getLineColumnStatus();
+
+            $quantity = $this->documentF->getModelLinesByFK($lineI->id, $this->foreignKey)->where($statusColumnF, '<>', $closeStatusF)->sum($quantityColumnF);
+
+            if ($quantity == 0) {
+                $lineI->$lineColumnI = $this->documentI->getLineOpenStatus();
+            } else {
+                $lineI->$lineColumnI = $this->documentI->getLinePartiallyCloseStatus();
+            }
+            $lineI->save();
+
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     public function calculateLineStatus($id)
     {
         $statusColumnF = $this->documentF->getLineColumnStatus();
