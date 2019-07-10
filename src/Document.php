@@ -217,6 +217,6 @@ class Document implements DocumentI
     public function getModelLinesByFK($value, $fk)
     {
         $lineClass = $this->lineClass;
-        return $lineClass->where($fk, $value);
+        return $lineClass::where($fk, $value);
     }
 }

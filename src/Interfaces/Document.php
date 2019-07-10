@@ -4,7 +4,7 @@ namespace Lungo\Doc\Interfaces;
 
 interface Document
 {
-    public function create(array &$header, array &$lines, string $foreignKey);
+    public function create(array &$header, array &$lines);
 
     public function editHeader($id, array $header);
 

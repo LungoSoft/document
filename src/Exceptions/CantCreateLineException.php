@@ -2,7 +2,7 @@
 
 namespace Lungo\Doc\Exceptions;
 
-class CantCreateLineException extends \Expcetion
+class CantCreateLineException extends \Exception
 {
     
 }
