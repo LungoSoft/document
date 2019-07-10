@@ -66,7 +66,7 @@ class DocumentManager
 
         $statusColumnF = $this->documentF->getLineColumnStatus();
         $quantityColumnF = $this->documentF->getLineQuantityColumn();
-        $closeStatusF = $this->documentF->getLineCloseStatus();
+        $closeStatusF = $this->documentF->getLineDestroyedStatus();
 
         $quantity = $lineI->$quantityColumnI - $this->documentF->getModelLinesByFK($lineI->id, $this->foreignKey)->where($statusColumnF, '<>', $closeStatusF)->sum($quantityColumnF);
 
@@ -97,47 +97,38 @@ class DocumentManager
     
     public function editQuantityLine($id, $lineId, $quantity) 
     {
-        $line = null;
-        $result = $this->documentI->getModels($id, $lineId, function ($headerM, $lineM) use (&$line) {
-            $line = $lineM;
+        $lineF = null;
+        $result = $this->documentF->getModels($id, $lineId, function ($headerM, $lineM) use (&$lineF) {
+            $lineF = $lineM;
         });
 
         if ($result) {
-            $this->editQuantity($line, $quantity);
-            return true;
-        } else {
-            $header = $this->documentI->getModel($id);
-            $headerColumn = $this->documentI->getHeaderColumnStatus();
-            $headerStatus = $this->documentI->getHeaderOpenStatus();
-
-            $line = $this->documentI->getModel($lineId, false);
-            $lineColumn = $this->documentI->getLineColumnStatus();
-            $lineStatus = $this->documentI->getLinePartiallyCloseStatus();
-            $lineQuantityColumn = $this->documentI->getLineQuantityColumn();
+            $lineQuantityColumnF = $this->documentF->getLineQuantityColumn();
             
-            if ($header->$headerColumn == $headerStatus && $line->$lineColumn == $lineStatus) {
-                $line2Qty = $this->documentF->getModelLinesByFK($lineId, $this->foreignKey)->get()->sum($this->documentF->getLineQuantityColumn());
+            //get line of initial document
+            $fk = $this->foreignKey;
+            $lineI = $this->documentI->getModel($lineF->$fk, false);
+            $lineQuantityColumnI = $this->documentI->getLineQuantityColumn();
+            $lineColumnI = $this->documentI->getLineColumnStatus();
 
-                if ($quantity > $line2Qty) {
-                    $this->editQuantity($line, $quantity);
-                    return true;
-                } elseif ($quantity == $line2Qty) {
-                    $line->$lineQuantityColumn = $quantity;
-                    $line->$lineColumn = $lineStatus;
-                    $line->save();
-                    return true;
-                }
+            if ($lineF->$lineQuantityColumnF == $quantity) {
+                return true;
+            } elseif ($lineI->$lineQuantityColumnI == $quantity) {//cerrada
+                $lineI->$lineColumnI = $this->documentI->getLineCloseStatus();
+            } elseif ($lineI->$lineQuantityColumnI > $quantity) {//parcialmente cerrada
+                $lineI->$lineColumnI = $this->documentI->getLinePartiallyCloseStatus();
+            } elseif ($lineI->$lineQuantityColumnI < $quantity) {//cerrada
+                return false;
             }
 
+            $lineF->$lineQuantityColumnF = $quantity;
+            $lineF->save();
+            $lineI->save();
+
+            return true;
+        } else {
             return false;
         }
-    }
-
-    protected function editQuantity($line, $quantity)
-    {
-        $column = $this->documentI->getLineQuantityColumn();
-        $line->$column = $quantity;
-        $line->save();
     }
 
     public function calculateLineStatus($id)
