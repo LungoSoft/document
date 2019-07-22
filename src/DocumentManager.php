@@ -53,6 +53,14 @@ class DocumentManager
         }
 
         $this->updateLinesStatus();
+        //edit header status models
+        $updated = [];
+        foreach ($lines as $lineI) {
+            if (!collect($updated)->contains($lineI->id)) {
+                $this->updateDocumentStatus($lineI);
+                $updated[] = $lineI->id;
+            }
+        }
         return $this->documentF->create($header, $lines);
     }
 
@@ -125,6 +133,10 @@ class DocumentManager
             $lineF->save();
             $lineI->save();
 
+            //edit header status model
+            $foreignKeyLine = $this->documentI->getForeignKeyLine();
+            $this->updateDocumentStatus($this->documentI->getModel($lineI->$foreignKeyLine));
+
             return true;
         } else {
             return false;
@@ -159,6 +171,10 @@ class DocumentManager
             }
             $lineI->save();
 
+            //edit header status model
+            $foreignKeyLine = $this->documentI->getForeignKeyLine();
+            $this->updateDocumentStatus($this->documentI->getModel($lineI->$foreignKeyLine));
+
             return true;
         } else {
             return false;
@@ -192,5 +208,30 @@ class DocumentManager
         }
 
         $model->save();
+    }
+
+    private function updateDocumentStatus($doc)
+    {
+        //header
+        $statusColumnHeaderI = $this->documentI->getHeaderColumnStatus();
+        $openStatusHeaderI = $this->documentI->getHeaderOpenStatus();
+        $closeStatusHeaderI = $this->documentI->getHeaderCloseStatus();
+
+        //lines
+        $lines = $doc->lines();
+        $statusColumnI = $this->documentI->getLineColumnStatus();
+        $openStatusI = $this->documentI->getLineOpenStatus();
+        $partiallyCloseStatusI = $this->documentI->getLinePartiallyCloseStatus();
+        
+        foreach ($lines as $line) {
+            if ($line->$statusColumnI == $openStatusI || $line->$statusColumnI == $partiallyCloseStatusI) {
+                $doc->$statusColumnHeaderI = $openStatusHeaderI;
+                $doc->save();
+                return;
+            }
+        }
+
+        $doc->$statusColumnHeaderI = $closeStatusHeaderI;
+        $doc->save();
     }
 }
