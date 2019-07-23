@@ -34,11 +34,16 @@ class DocumentManager
 
         $fk = $this->foreignKey;
         $this->modifiedLines = [];
+        $toUpdate = [];
         
         foreach ($lines as $key => $line) {
             $actualLineId = isset($line[$fk]) ? $line[$fk] : null;//get actual id from line if foreign key if is defined
             if ($actualLineId) {
                 $actualLine = $this->documentI->getModel($actualLineId, false);
+                $foreignKeyLine = $this->documentI->getForeignKeyLine();
+                if (!collect($toUpdate)->contains($actualLine->$foreignKeyLine)) {
+                    $toUpdate[] = $actualLine->$foreignKeyLine;
+                }
             }
 
             if (isset($actualLine) && $actualLine) {//if exist line, then map columns from config
@@ -54,12 +59,9 @@ class DocumentManager
 
         $this->updateLinesStatus();
         //edit header status models
-        $updated = [];
-        foreach ($lines as $lineI) {
-            if (!collect($updated)->contains($lineI->id)) {
-                $this->updateDocumentStatus($lineI);
-                $updated[] = $lineI->id;
-            }
+        foreach ($toUpdate as $headerId) {
+            $actualHeader = $this->documentI->getModel($headerId);
+            $this->updateDocumentStatus($actualHeader);
         }
         return $this->documentF->create($header, $lines);
     }
@@ -174,6 +176,9 @@ class DocumentManager
             //edit header status model
             $foreignKeyLine = $this->documentI->getForeignKeyLine();
             $this->updateDocumentStatus($this->documentI->getModel($lineI->$foreignKeyLine));
+
+            $foreignKeyLineF = $this->documentF->getForeignKeyLine();
+            $this->updateDocumentStatus($this->documentF->getModel($lineF->$foreignKeyLineF));
 
             return true;
         } else {
