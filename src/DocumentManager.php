@@ -177,6 +177,9 @@ class DocumentManager
             $foreignKeyLine = $this->documentI->getForeignKeyLine();
             $this->updateDocumentStatus($this->documentI->getModel($lineI->$foreignKeyLine));
 
+            $foreignKeyLineF = $this->documentF->getForeignKeyLine();
+            $this->updateDocumentStatus($this->documentF->getModel($lineF->$foreignKeyLineF));
+
             return true;
         } else {
             return false;
