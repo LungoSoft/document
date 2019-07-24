@@ -103,7 +103,7 @@ class Document implements DocumentI
             $lines[$key]['id'] = $modelLine->id;
         }
 
-        return $this;
+        return $model;
     }
 
     public function editHeader($id, array $header)

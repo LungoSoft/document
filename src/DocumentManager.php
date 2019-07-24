@@ -46,7 +46,7 @@ class DocumentManager
                 }
             }
 
-            if (isset($actualLine) && $actualLine) {//if exist line, then map columns from config
+            if ($actualLineId) {//if exist line, then map columns from config
                 if ($this->canCreateLine($actualLine, $lines[$key])) {
                     foreach ($rules as $columnFrom => $columnTo) {
                         $lines[$key][$columnTo] = $actualLine->$columnFrom;
@@ -223,7 +223,7 @@ class DocumentManager
         $closeStatusHeaderI = $this->documentI->getHeaderCloseStatus();
 
         //lines
-        $lines = $doc->lines();
+        $lines = $doc->lines;
         $statusColumnI = $this->documentI->getLineColumnStatus();
         $openStatusI = $this->documentI->getLineOpenStatus();
         $partiallyCloseStatusI = $this->documentI->getLinePartiallyCloseStatus();
