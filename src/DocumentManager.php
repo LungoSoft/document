@@ -121,23 +121,27 @@ class DocumentManager
             $lineQuantityColumnI = $this->documentI->getLineQuantityColumn();
             $lineColumnI = $this->documentI->getLineColumnStatus();
 
-            if ($lineF->$lineQuantityColumnF == $quantity) {
-                return true;
-            } elseif ($lineI->$lineQuantityColumnI == $quantity) {//cerrada
-                $lineI->$lineColumnI = $this->documentI->getLineCloseStatus();
-            } elseif ($lineI->$lineQuantityColumnI > $quantity) {//parcialmente cerrada
-                $lineI->$lineColumnI = $this->documentI->getLinePartiallyCloseStatus();
-            } elseif ($lineI->$lineQuantityColumnI < $quantity) {//cerrada
-                return false;
+            if ($lineI) {
+                if ($lineF->$lineQuantityColumnF == $quantity) {
+                    return true;
+                } elseif ($lineI->$lineQuantityColumnI == $quantity) {//cerrada
+                    $lineI->$lineColumnI = $this->documentI->getLineCloseStatus();
+                } elseif ($lineI->$lineQuantityColumnI > $quantity) {//parcialmente cerrada
+                    $lineI->$lineColumnI = $this->documentI->getLinePartiallyCloseStatus();
+                } elseif ($lineI->$lineQuantityColumnI < $quantity) {//cerrada
+                    return false;
+                }
+                $lineI->save();
             }
 
             $lineF->$lineQuantityColumnF = $quantity;
             $lineF->save();
-            $lineI->save();
 
             //edit header status model
-            $foreignKeyLine = $this->documentI->getForeignKeyLine();
-            $this->updateDocumentStatus($this->documentI->getModel($lineI->$foreignKeyLine));
+            if ($lineI) {
+                $foreignKeyLine = $this->documentI->getForeignKeyLine();
+                $this->updateDocumentStatus($this->documentI->getModel($lineI->$foreignKeyLine));
+            }
 
             return true;
         } else {
