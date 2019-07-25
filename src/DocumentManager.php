@@ -164,18 +164,22 @@ class DocumentManager
             $lineI = $this->documentI->getModel($lineF->$fk, false);
             $lineColumnI = $this->documentI->getLineColumnStatus();
 
-            $quantity = $this->documentF->getModelLinesByFK($lineI->id, $this->foreignKey)->where($statusColumnF, '<>', $closeStatusF)->sum($quantityColumnF);
-
-            if ($quantity == 0) {
-                $lineI->$lineColumnI = $this->documentI->getLineOpenStatus();
-            } else {
-                $lineI->$lineColumnI = $this->documentI->getLinePartiallyCloseStatus();
+            if ($lineI) {
+                $quantity = $this->documentF->getModelLinesByFK($lineI->id, $this->foreignKey)->where($statusColumnF, '<>', $closeStatusF)->sum($quantityColumnF);
+    
+                if ($quantity == 0) {
+                    $lineI->$lineColumnI = $this->documentI->getLineOpenStatus();
+                } else {
+                    $lineI->$lineColumnI = $this->documentI->getLinePartiallyCloseStatus();
+                }
+                $lineI->save();
             }
-            $lineI->save();
 
             //edit header status model
-            $foreignKeyLine = $this->documentI->getForeignKeyLine();
-            $this->updateDocumentStatus($this->documentI->getModel($lineI->$foreignKeyLine));
+            if ($lineI) {
+                $foreignKeyLine = $this->documentI->getForeignKeyLine();
+                $this->updateDocumentStatus($this->documentI->getModel($lineI->$foreignKeyLine));
+            }
 
             $foreignKeyLineF = $this->documentF->getForeignKeyLine();
             $this->updateDocumentStatus($this->documentF->getModel($lineF->$foreignKeyLineF));
