@@ -168,9 +168,10 @@ class DocumentManager
                 }
             }
 
+            return true;
+        } else {
+            return false;
         }
-
-        return $model;
     }
 
     public function removeLine($id, $lineId)
