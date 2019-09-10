@@ -149,6 +149,30 @@ class DocumentManager
         }
     }
 
+    public function removeHeader($id)
+    {
+        $model = $this->documentF->getModel($id);
+        if ($this->documentF->canEdit($model))
+        {
+            $fk = $this->foreignKey;
+
+            $this->documentF->destroyHeader($id);
+            $lines = $model->lines;
+
+            foreach ($lines as $lineF) {
+                if ($lineF->$fk) {
+                    $this->calculateLineStatus($lineF->$fk);
+                    $lineI = $this->documentI->getModel($lineF->$fk, false);
+                    $foreignKeyLine = $this->documentI->getForeignKeyLine();
+                    $this->updateDocumentStatus($this->documentI->getModel($lineI->$foreignKeyLine));
+                }
+            }
+
+        }
+
+        return $model;
+    }
+
     public function removeLine($id, $lineId)
     {
         $lineF = null;
@@ -206,9 +230,10 @@ class DocumentManager
         $closeStatusI = $this->documentI->getLineCloseStatus();
         $openStatusI = $this->documentI->getLineOpenStatus();
         $partiallyStatusI = $this->documentI->getLinePartiallyCloseStatus();
+        $destroyedStatusI = $this->documentI->getLineDestroyedStatus();
 
         $totalI = $model->quantity;
-        $totalF = $this->documentF->getModelLinesByFK($id, $this->foreignKey)->where($statusColumnF, '<>', $closeStatusF)->sum($quantityColumnF);
+        $totalF = $this->documentF->getModelLinesByFK($id, $this->foreignKey)->where($statusColumnF, '<>', $destroyedStatusI)->sum($quantityColumnF);
 
         if ($totalF == 0) {
             $model->$statusColumnI = $openStatusI;
